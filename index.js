@@ -60,27 +60,27 @@ app.delete('/phonebookapi/contacts/:id', (request, response) => {
 
 app.post('/phonebookapi/contacts', (request,response) => {
     const contactReceived = request.body
-    console.log(contact)
+    console.log(contactReceived)
 
-    if(!contact.name && !contact.phone) {
+    if(!contactReceived.name && !contactReceived.phone) {
         return response.status(400).json({ 
             error: 'name and phone missing' 
         })
     }
-    else if (!contact.name) {
+    else if (!contactReceived.name) {
         return response.status(400).json({ 
             error: 'name missing' 
         })
     }
-    else if(!contact.phone) {
+    else if(!contactReceived.phone) {
         return response.status(400).json({
             error: 'phone missing'
         })
     }
 
     const contactToSave = {
-        name: contact.name,
-        phone: contact.phone,
+        name: contactReceived.name,
+        phone: contactReceived.phone,
         id: generateId(),
     }
 
@@ -91,7 +91,8 @@ app.post('/phonebookapi/contacts', (request,response) => {
 })
 
 const generateId = () => {
-  const maxId = contacts.length > 0
+    console.log(contacts.length)
+    const maxId = contacts.length > 0
     ? Math.max(...contacts.map(n => n.id))
     : 0
   return maxId + 1
