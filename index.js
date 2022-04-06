@@ -1,7 +1,12 @@
 const express = require('express')
 const app = express()
+const morgan = require('morgan')
+const path = require('path')
+const fs = require('fs')
+const cors = require('cors')
 
 app.use(express.json())
+app.use(cors())
 
 let contacts = [
 	{
@@ -25,6 +30,9 @@ let contacts = [
       "id": 4
     }
 ]
+
+morgan.token('dataToken', function(req,res){return JSON.stringify(req.body)})
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms' ))
 
 app.get('/phonebookapi/contacts', (request,response) => {
     response.json(contacts)
@@ -58,23 +66,28 @@ app.delete('/phonebookapi/contacts/:id', (request, response) => {
     response.status(204).end()
 })
 
-app.post('/phonebookapi/contacts', (request,response) => {
+app.post('/phonebookapi/contacts',morgan(':method :url :status :res[content-length] - :response-time ms :dataToken'), (request,response) => {
     const contactReceived = request.body
-    console.log(contactReceived)
+    //console.log(contactReceived)
 
     if(!contactReceived.name && !contactReceived.phone) {
         return response.status(400).json({ 
-            error: 'name and phone missing' 
+            error: 'name and phone not inserted' 
         })
     }
     else if (!contactReceived.name) {
         return response.status(400).json({ 
-            error: 'name missing' 
+            error: 'name not inserted' 
         })
     }
     else if(!contactReceived.phone) {
         return response.status(400).json({
-            error: 'phone missing'
+            error: 'phone not inserted'
+        })
+    }
+    else if((contacts.map(contact => contact.name)).includes(contactReceived.name)) {
+        return response.status(400).json({
+            error: 'name must be unique'
         })
     }
 
@@ -98,7 +111,8 @@ const generateId = () => {
   return maxId + 1
 }
 
-const PORT = 3001
+
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
