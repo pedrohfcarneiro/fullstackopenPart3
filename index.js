@@ -1,14 +1,18 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const path = require('path')
 const fs = require('fs')
 const cors = require('cors')
+const Contact = require('./models/contact')
 
 
 app.use(express.json())
 app.use(cors())
 app.use(express.static('build'))
+
+
 
 let contacts = [
 	{
@@ -37,35 +41,34 @@ morgan.token('dataToken', function(req,res){return JSON.stringify(req.body)})
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms' ))
 
 app.get('/phonebookapi/contacts', (request,response) => {
-    response.json(contacts)
+    Contact.find({}).then(contacts => {
+        response.json(contacts)
+    })
 })
 
 app.get('/phonebookapi/contacts/:id', (request,response) => {
-    const id = Number(request.params.id)
-    const contact = contacts.find(contact => contact.id === id)
-
-    if (contact) {
+    Contact.findById(request.params.id).then(contact => {
         response.json(contact)
-    } else {
-        response.status(404).end()
-    }
+    })
 })
 
-app.get('/info', (request,response) => {
-    const numberOfContacts = contacts.length
-    const date = new Date()
-    response.send(
-        `<div>
-            <p>Phonebook has info for ${numberOfContacts} people</p>
-            <p>${date}</p>
-        </div>`
-    )
-})
+//app.get('/info', (request,response) => {
+//    const numberOfContacts = contacts.length
+//    const date = new Date()
+//    response.send(
+//        `<div>
+//            <p>Phonebook has info for ${numberOfContacts} people</p>
+//            <p>${date}</p>
+//        </div>`
+//    )
+//})
 
-app.delete('/phonebookapi/contacts/:id', (request, response) => {
-    const id = Number(request.params.id)
-    contacts = contacts.filter(contact => contact.id !== id)
-    response.status(204).end()
+app.delete('/phonebookapi/contacts/:id', (request, response, next) => {
+    Contact.findByIdAndRemove(request.params.id)
+    .then(result => {
+        response.status(204).end()
+    })
+    .catch(error => next(error))
 })
 
 app.post('/phonebookapi/contacts',morgan(':method :url :status :res[content-length] - :response-time ms :dataToken'), (request,response) => {
@@ -93,15 +96,15 @@ app.post('/phonebookapi/contacts',morgan(':method :url :status :res[content-leng
         })
     }
 
-    const contactToSave = {
-        name: contactReceived.name,
-        phone: contactReceived.phone,
-        id: generateId(),
-    }
 
-    contacts = contacts.concat(contactToSave)
+    const contact = new Contact({
+        name: contactReceived.namme
+        phone: contactReceived.phone
+    })
 
-    response.json(contactToSave)
+    contact.save().then(savedContact => {
+        response.json(savedContact)
+    })
 
 })
 
