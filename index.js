@@ -73,7 +73,7 @@ app.delete('/phonebookapi/contacts/:id', (request, response, next) => {
 
 app.post('/phonebookapi/contacts',morgan(':method :url :status :res[content-length] - :response-time ms :dataToken'), (request,response) => {
     const contactReceived = request.body
-    //console.log(contactReceived)
+    console.log(contactReceived)
 
     if(!contactReceived.name && !contactReceived.phone) {
         return response.status(400).json({ 
@@ -98,10 +98,10 @@ app.post('/phonebookapi/contacts',morgan(':method :url :status :res[content-leng
 
 
     const contact = new Contact({
-        name: contactReceived.namme,
+        name: contactReceived.name,
         phone: contactReceived.phone,
     })
-
+    console.log(contact)
     contact.save().then(savedContact => {
         response.json(savedContact)
     })
