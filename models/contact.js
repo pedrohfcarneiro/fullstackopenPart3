@@ -24,4 +24,4 @@ contactSchema.set('toJSON', {
     }
 })
 
-module.exports = mongoose.model('Contact', noteSchema)
+module.exports = mongoose.model('Contact', contactSchema)
