@@ -98,8 +98,8 @@ app.post('/phonebookapi/contacts',morgan(':method :url :status :res[content-leng
 
 
     const contact = new Contact({
-        name: contactReceived.namme
-        phone: contactReceived.phone
+        name: contactReceived.namme,
+        phone: contactReceived.phone,
     })
 
     contact.save().then(savedContact => {
