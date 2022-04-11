@@ -6,6 +6,7 @@ const path = require('path')
 const fs = require('fs')
 const cors = require('cors')
 const Contact = require('./models/contact')
+import errorHandler from './errorHandler.js'
 
 
 app.use(express.json())
@@ -40,16 +41,42 @@ let contacts = [
 morgan.token('dataToken', function(req,res){return JSON.stringify(req.body)})
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms' ))
 
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+  
+// handler of requests with unknown endpoint, declaration above ( not in it's own component for testing purposes )
+app.use(unknownEndpoint)
+
+app.use(errorHandler)
+
 app.get('/phonebookapi/contacts', (request,response) => {
-    Contact.find({}).then(contacts => {
-        response.json(contacts)
+    Contact.find({})
+    .then(contacts => {
+        if(contacts){
+            response.json(contacts)
+        }
+        else {
+            response.status(404).end()
+        }
+    })
+    .catch(error => {
+        console.log(error)
+        response.status(500).end()
     })
 })
 
-app.get('/phonebookapi/contacts/:id', (request,response) => {
-    Contact.findById(request.params.id).then(contact => {
-        response.json(contact)
+app.get('/phonebookapi/contacts/:id', (request,response,next) => {
+    Contact.findById(request.params.id).
+    then(contact => {
+        if(contact){
+            response.json(contact)
+        }
+        else {
+            response.status(404).end()
+        }
     })
+    .catch(error => next(error))
 })
 
 //app.get('/info', (request,response) => {
