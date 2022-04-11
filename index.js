@@ -6,7 +6,6 @@ const path = require('path')
 const fs = require('fs')
 const cors = require('cors')
 const Contact = require('./models/contact')
-const errorHandler = require('./errorHandler.js')
 
 
 app.use(express.json())
@@ -40,15 +39,6 @@ let contacts = [
 
 morgan.token('dataToken', function(req,res){return JSON.stringify(req.body)})
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms' ))
-
-const unknownEndpoint = (request, response) => {
-    response.status(404).send({ error: 'unknown endpoint' })
-}
-  
-// handler of requests with unknown endpoint, declaration above ( not in it's own component for testing purposes )
-app.use(unknownEndpoint)
-
-app.use(errorHandler)
 
 app.get('/phonebookapi/contacts', (request,response) => {
     Contact.find({})
@@ -142,6 +132,24 @@ const generateId = () => {
     : 0
   return maxId + 1
 }
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+  
+// handler of requests with unknown endpoint, declaration above ( not in it's own component for testing purposes )
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+  
+    if (error.name === 'CastError') {
+      return response.status(400).send({ error: 'malformatted id' })
+    } 
+  
+    next(error)
+}
+app.use(errorHandler)
 
 
 const PORT = process.env.PORT || 3001
