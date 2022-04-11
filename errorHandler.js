@@ -8,4 +8,4 @@ const errorHandler = (error, request, response, next) => {
     next(error)
 }
   
-export default errorHandler
+module.exports = errorHandler
