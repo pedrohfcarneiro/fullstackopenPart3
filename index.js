@@ -6,7 +6,7 @@ const path = require('path')
 const fs = require('fs')
 const cors = require('cors')
 const Contact = require('./models/contact')
-import errorHandler from './errorHandler.js'
+const errorHandler = require('./errorHandler.js')
 
 
 app.use(express.json())
