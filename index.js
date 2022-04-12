@@ -125,6 +125,39 @@ app.post('/phonebookapi/contacts',morgan(':method :url :status :res[content-leng
 
 })
 
+app.put('/phonebookapi/contacts/:id', (request, response, next) => {
+    const contactReceived = request.body
+    console.log(contactReceived)
+
+    if(!contactReceived.name && !contactReceived.phone) {
+        return response.status(400).json({ 
+            error: 'name and phone not inserted' 
+        })
+    }
+    else if (!contactReceived.name) {
+        return response.status(400).json({ 
+            error: 'name not inserted' 
+        })
+    }
+    else if(!contactReceived.phone) {
+        return response.status(400).json({
+            error: 'phone not inserted'
+        })
+    }
+
+    const contact = {
+        name: contactReceived.name,
+        phone: contactReceived.phone,
+    }
+    console.log(contact)
+
+    Contact.findByIdAndUpdate(request.params.id, contact, {new:true})
+    .then(updatedContact => {
+        response.json(updatedContact)
+    })
+    .catch(error => next(error))
+})
+
 const generateId = () => {
     console.log(contacts.length)
     const maxId = contacts.length > 0
